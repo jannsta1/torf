@@ -1,0 +1,53 @@
+<launch>
+
+    <arg name="bag_prefix" default="the_bag_with_no_name"/>
+    <arg name="save_images" default="true"/>
+
+
+    ROSBAG NODE
+    we log the images, camera_info and pose info of the drone
+    see https://answers.ros.org/question/52773/record-with-rosbag-from-launch-file/ for a potential way of incorporating this into mission launches
+
+    <group if="$(arg save_images)">
+        <node pkg="rosbag" type="record" name="robot_bag"
+        args="-O $(arg bag_prefix)
+        /optic_flow_node/flow_xy_out
+        /optic_flow_node/flow_info
+        /mavros/local_position/velocity_body
+        /mavros/local_position/pose
+        /mavros/global_position/global
+        /mavros/altitude
+        /mavros/global_position/compass_hdg
+        /mavros/state
+        /mavros/extended_state
+        /resize_img/image
+        /resize_img/camera_info
+        /rosout_agg
+        /pyx4_node/pyx4_state
+        /cwssim_node/cwssim_status
+        "
+        >
+        </node>
+    </group>
+
+    <group unless="$(arg save_images)">
+        <node pkg="rosbag" type="record" name="robot_bag"
+        args="-O $(arg bag_prefix)
+        /optic_flow_node/flow_xy_out
+        /optic_flow_node/flow_info
+        /mavros/local_position/velocity_body
+        /mavros/local_position/pose
+        /mavros/global_position/global
+        /mavros/altitude
+        /mavros/global_position/compass_hdg
+        /mavros/state
+        /mavros/extended_state
+        /rosout_agg
+        /pyx4_node/pyx4_state
+        /cwssim_node/cwssim_status
+        "
+        >
+        </node>
+    </group>
+
+</launch>

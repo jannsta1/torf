@@ -1,0 +1,74 @@
+<launch>
+
+    BLUEFOX NODE
+    <arg name="bluefox_serial" default="$(env BLUEFOX_SERIAL_NO)" />
+    <arg name="image_topic" default="/resize_img/image" />
+    <arg name="image_topic_info" default="/resize_img/camera_info " />
+    <arg name="fps" default="10" />
+    <arg name="aec" default="true"/>
+    <arg name="expose_us" default="10000"/>
+    <include file="$(find lfdrone)/launch/matrix_vision.launch" >
+        <arg name="device" value="$(arg bluefox_serial)" />
+        <arg name="rate" value="$(arg fps)" />
+        <arg name="aec" default="$(arg aec)"/>
+        <arg name="expose_us" default="$(arg expose_us)"/>
+    </include>
+
+    START MAVROS (IF REQUIRED - NOT BY DEFAULT)
+    <arg name="do_mavros" default="false"/>
+    <include file="$(find mavros)/launch/px4.launch" if="$(arg do_mavros)"/>
+
+    SWEEP MISSION
+    <arg name="duration_out" default="15.0"/>
+    <arg name="mission_hgt" default="5.0"/>
+    <arg name="outbound_hgt" default="5.0"/>
+    <arg name="hdg_out" default="0.0"/>
+    <arg name="angle_of_attack" default="70.0"/>
+    <arg name="vel_tgt" default="1.0"/>
+    <arg name="multiplier" default="5.0"/>
+    <arg name="amplitude" default="8.0"/>
+    <arg name="multi_process" default="true"/>
+    <arg name="outbound_images" default="150"/>
+    <arg name="cwssim_im_topic" default="/resize_img/image"/>
+    <arg name="x_offset" default="3.0"/>
+    <arg name="slowdown_factor" default="0.7"/>
+    <arg name="t_turnaround" default="10"/>
+    <arg name="t_familiar" default="1.0"/>
+    <arg name="outbound_configuration" default="fixed_heading"/>
+    <arg name="outbound_sin_freq" default="0.1"/>
+    <arg name="cwssim_thresh" default="0.82"/>
+    <arg name="mission_type" default="active"/>
+
+    <node pkg="lfdrone" type="torf_ros.py" name="cwssim_node" output="screen" required="true"
+            args="
+                --mission_type $(arg mission_type)
+                --duration_out $(arg duration_out)
+                --mission_hgt  $(arg mission_hgt)
+                --outbound_hgt  $(arg outbound_hgt)
+                --hdg_out $(arg hdg_out)
+                --x_offset $(arg x_offset)
+                --angle_of_attack $(arg angle_of_attack)
+                --vel_tgt $(arg vel_tgt)
+                --multiplier $(arg multiplier)
+                --amplitude $(arg amplitude)
+                --multi_process $(arg multi_process)
+                --outbound_images $(arg outbound_images)
+                --camera_topic $(arg cwssim_im_topic)
+                --slowdown_factor $(arg slowdown_factor)
+                --t_turnaround $(arg t_turnaround)
+              "
+        />
+
+    IMAGE WATCHDOG NODE
+    <arg name="im_watchdog" default="true"/>
+    <node pkg="lfdrone" type="image_watchdog_node.py" name="image_watchdog" output="screen" required="false" if="$(arg im_watchdog)"/>
+
+    ROSBAG
+    <arg name="bag_prefix" default="cwssim_real"/>
+    <arg name="save_images" default="True"/>
+    <include file="$(find lfdrone)/src/cwssim/launch/bag_cwssim_mission.launch">
+        <arg name="bag_prefix" value="$(arg bag_prefix)"/>
+        <arg name="save_images" value="$(arg save_images)"/>
+    </include>
+
+</launch>

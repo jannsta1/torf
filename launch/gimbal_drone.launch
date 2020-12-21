@@ -1,0 +1,91 @@
+<launch>
+
+    <arg name="publish-images" default="false"/>
+    <arg name="world" default="flat.world"/>
+    <arg name="vehicle" default="typhoon_copy"/>
+    <arg name="use_hgt_compensation" default="true"/>
+    <arg name="use_optic_flow" default="true"/>
+    <arg name="comp_yaw" default="false"/>
+    <arg name="gui" default="true"/>
+    <arg name="optic_flow_type" default="analytic"/>
+    <arg name="border_width" default="15"/>
+    <arg name="drop_frames" default="false"/>
+    <arg name="frame_sampling_rate" default="1"/>
+    <arg name="flip_y" default="false"/>
+
+    GAZEBO GENERATED IMAGES
+    <arg name="gz_im_topic_name" default="/usb_cam/image_raw"/>
+    <arg name="gz_im_info_name" default="/usb_cam/camera_info"/>
+    NODLET IMAGES
+    <arg name="nd_im_topic_name" default="/resize_img/image"/>
+    <arg name="nd_im_info_name" default="/resize_img/camera_info"/>
+    IMAGES USED FOR OPTIC FLOW
+    <arg name="of_im_topic_name" default="$(arg nd_im_topic_name)"/>
+    <arg name="of_im_info_name" default="$(arg nd_im_info_name)"/>
+
+    PX4 MAVROS NODE
+    <include file="$(find px4)/launch/mavros_posix_sitl.launch">
+        <arg name="world" default="$(arg world)"/>
+        <arg name="verbose" value="true"/>
+        <arg name="vehicle" value="$(arg vehicle)"/>
+        <!--<arg name="interactive" value="false"/>-->
+        <!--<arg name="respawn_gazebo" value="true"/>-->
+        <arg name="respawn_mavros" value="false"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <!--<arg name="sdf" value="/home/jan/pixhawk_firmware/src/1.8.0_release/Firmware/ROMFS/px4fmu_common/init.d-posix/bee"/>-->
+    </include>
+
+    <!--VISON PROCESSING NODE-->
+    <node pkg="image_proc" type="image_proc" name="image_proc" ns="/usb_cam"/>
+    <arg name="main_image_width" default="235"/>
+    <arg name="main_image_height" default="150"/>
+
+    <node pkg="nodelet" type="nodelet" args="standalone image_proc/resize" name="resize_img">
+        <param name="use_scale" type="bool" value="false" />
+        <param name="width" type="int" value="$(arg main_image_width)" />
+        <param name="height" type="int" value="$(arg main_image_height)" />
+        <param name="interpolation" type="int" value="0" />           reference interpolation enum = (0, 'Nearest neighbor', 1, 'Linear', 2, 'Cubic', 4, 'Lanczos4')
+        <!-- remap input topics -->
+        <remap from="image" to="/usb_cam/image_mono"/>
+        <remap from="camera_info" to="/usb_cam/camera_info"/>
+        <!-- remap output topics -->
+        <remap from="/resize_image/image" to="/camera_resize/image_raw"/>
+        <remap from="/resize_image/camera_info" to="/camera_resize/camera_info"/>
+    </node>
+
+    OPTIC FLOW NODE
+    <group if="$(arg use_optic_flow)">
+        <node pkg="lfdrone" type="optic_flow_ROS_wrapper.py" name="optic_flow" output="screen"
+            args="
+                -d $(arg publish-images)
+                -e $(arg of_im_topic_name)
+                -j $(arg of_im_info_name)
+                --use_hgt_compensation $(arg use_hgt_compensation)
+                --of_comp_yaw $(arg comp_yaw)
+                --optic_flow_type $(arg optic_flow_type)
+                --border_width $(arg border_width)
+                --drop_frames $(arg drop_frames)
+                --frame_sampling_rate $(arg frame_sampling_rate)
+                --flip_y $(arg flip_y)
+              "
+        />
+    </group>
+
+    <arg name="gimbal_roll" default="0.0"/>
+    <arg name="gimbal_pitch" default="-50.0"/>
+    <arg name="gimbal_yaw" default="0.0"/>
+
+    SET GIMBAL LOCATION
+    <!--<node pkg="lfdrone" type="gimbal_control_basic.py" name="gimbal_control" output="screen"-->
+        <!--args="-->
+            <!-- -r $(arg gimbal_roll) -p $(arg gimbal_pitch) -y $(arg gimbal_yaw)-->
+          <!--"-->
+    <!--/>-->
+    FAKE VICON MODULE
+    <!--Load vicon-->
+    <!--<include file="$(find dfdrone)/launch/fake_vicon.launch">-->
+        <!--<arg name="ns" value="$(arg ns)"/>-->
+        <!--<arg name="robot_str" value="$(arg robot_str)"/>-->
+    <!--</include>-->
+
+</launch>
