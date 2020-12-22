@@ -3,7 +3,7 @@ from __future__ import division
 
 from scipy import signal
 
-from utils import generate_window
+from src.utils import generate_window
 
 from torf.base import *
 

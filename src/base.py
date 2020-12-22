@@ -27,7 +27,7 @@ from copy import copy
 import numpy as np
 import cv2
 
-from torf.definitions_cwssim import DATA as CWSSIM_DATA
+from definitions_cwssim import DATA as CWSSIM_DATA
 
 LOW_MASK = 1
 HI_MASK = 2

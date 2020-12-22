@@ -8,40 +8,26 @@
 #
 from __future__ import division
 
-from sensor_msgs.msg import Image
-from sweep_mission import generate_sweep_mission
-from cx_model_px4.cx_odometry import Cx_odometry
+# global imports
 from argparse_sweep_mission import *
+from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-from cx_model_px4.definitions_cx import *
-from torf.cwssim_container import *
-from lfdrone.msg import Cwssim_status
-from pyx4_base.pyx4_base import *
-from enum import Enum
+from cwssim_container import *
 import rosparam
+
+# local imports
+from definitions_cwssim import Homing_outcome, CWSSIM_STATE, MULTIPROCESSING_STATUS
+from sweep_mission import generate_sweep_mission
+from torf.msg import Cwssim_status
+from pyx4_base.pyx4_base import *
+
 bridge = CvBridge()
 
+# handle different python version implementations of Queue:
 try:
    from queue import Queue
 except ImportError:
    import Queue as Queue
-
-class CWSSIM_STATE(Enum):
-    NOT_INIT = 0               # cwwsim is not initilaised yet
-    PRE_OUT = 1
-    OUTBOUND = 2
-    INTERUPTION = 3
-    INBOUND = 4
-    FINISHED = 5
-    UKNOWN = 6
-    TURNING_AROUND = 7
-
-
-class MULTIPROCESSING_STATUS(Enum):
-    UNKNOWN = 0
-    NOT_INIT = 1
-    INITIALISING = 2
-    INITIALISED = 3
 
 
 class Cwssim_homing_mission(Pyx4_base):
@@ -132,16 +118,6 @@ class Cwssim_homing_mission(Pyx4_base):
         self.homing_state = False
         self.cwssim_mission_outcome = Homing_outcome.UNFINISHED_UNSPECIFIED.value
 
-        # make sure required filepaths exist
-        if results_filename is None:
-            self.results_filename = os.path.join(LATEST_SIMULTAION_DIR, 'cwssim_logger.npz')
-        else:
-            self.results_filename = results_filename
-
-        # todo - don't think this is required for logbags? Check this out i.e. does the file save if dir doesnt already exist
-        if not os.path.exists(LATEST_SIMULTAION_DIR):
-            os.makedirs(LATEST_SIMULTAION_DIR)
-
         # intialise the cx model
         super(Cwssim_homing_mission, self).__init__(
             flight_instructions,
@@ -190,14 +166,7 @@ class Cwssim_homing_mission(Pyx4_base):
         ################################################################################
 
         # ROS subscribers - this should be initialise last in init function to avoid race conditions
-
         self.downcam_sub = rospy.Subscriber(self.camera_topic_name, Image, self.downcam_callback, queue_size=5)
-
-        # start publish mission details wrapper thread
-        self.publish_mission_spec_thread = Thread(target=Cx_odometry.publish_mission_spec,
-                                                  args=(mission_args, self.node_namespace, self.mavros_interface))
-        self.publish_mission_spec_thread.daemon = True
-        self.publish_mission_spec_thread.start()
 
         rospy.loginfo('starting torf thread')
         self.cwssim_wrap_thread = Thread(target=self.cwssim_wrapper, args=())
@@ -343,7 +312,7 @@ class Cwssim_homing_mission(Pyx4_base):
                         rospy.loginfo("preparing memory bank for multiprocessing")
                         self.initialise_memory_bank_for_multiprocessing()
             else:
-                self.cwssim_state=CWSSIM_STATE.INTERUPTION
+                self.cwssim_state= CWSSIM_STATE.INTERUPTION
 
 
             if self.need2reverse_image_idxs and \
@@ -377,26 +346,14 @@ class Cwssim_homing_mission(Pyx4_base):
         # todo - set flag once tidying up has happened, then if it is called again we won't get stuck here (there may
         #  be a better method than this, e.g. is there a pool status we can check?)
 
-
-        # print ('##########################################################################')
-        # print ('########### Closing torf node ##############################################')
-        # print ('mission outcome was {} : {}'.format(self.cx_mission_outcome, Homing_outcome(self.cx_mission_outcome)))
-        # print ('##########################################################################')
-        #
-        # rosparam.set_param('cx_test_complete', "true")  # so that the test scehduler knows this test is complete (may be able to replace with rospy shutdown signal)
-
-
     # ###########################################
     # # ROS callback functions
     # ###########################################
     def compass_hdg_callback(self, data):
         self.global_compass_hdg_deg = data.data
-    # def optic_flow_callback(self, data):
-    #     self.optic_flow_q.put([data.speed_left, data.speed_right, data.time_between_frames_s])
 
 
 if __name__ == '__main__':
-
 
     node_namespace = 'cwssim_node'
     rospy.init_node(node_namespace, anonymous=True, log_level=rospy.DEBUG )

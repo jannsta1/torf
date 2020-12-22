@@ -8,7 +8,7 @@
 
 from __future__ import division
 
-from definitions_cwssim import DATA
+from src.definitions_cwssim import DATA
 import pytest
 import os
 import cv2

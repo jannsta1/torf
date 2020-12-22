@@ -53,24 +53,6 @@
         <remap from="/resize_image/camera_info" to="/camera_resize/camera_info"/>
     </node>
 
-    OPTIC FLOW NODE
-    <group if="$(arg use_optic_flow)">
-        <node pkg="lfdrone" type="optic_flow_ROS_wrapper.py" name="optic_flow" output="screen"
-            args="
-                -d $(arg publish-images)
-                -e $(arg of_im_topic_name)
-                -j $(arg of_im_info_name)
-                --use_hgt_compensation $(arg use_hgt_compensation)
-                --of_comp_yaw $(arg comp_yaw)
-                --optic_flow_type $(arg optic_flow_type)
-                --border_width $(arg border_width)
-                --drop_frames $(arg drop_frames)
-                --frame_sampling_rate $(arg frame_sampling_rate)
-                --flip_y $(arg flip_y)
-              "
-        />
-    </group>
-
     <arg name="gimbal_roll" default="0.0"/>
     <arg name="gimbal_pitch" default="-50.0"/>
     <arg name="gimbal_yaw" default="0.0"/>

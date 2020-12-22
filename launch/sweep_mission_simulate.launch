@@ -9,7 +9,7 @@
     <arg name="comp_yaw" default="false"/>
     <arg name="of_im_topic_name" default="/resize_img/image"/>
     <arg name="of_im_info_name" default="/resize_img/camera_info"/>
-    <include file="$(find lfdrone)/src/torf/launch/gimbal_drone.launch">
+    <include file="$(find torf)/launch/gimbal_drone.launch">
         <arg name="world" value="$(arg world)"/>
         <arg name="vehicle" value="$(arg vehicle)"/>
         <!--<arg name="verbose" value="true"/>-->
@@ -33,7 +33,7 @@
     <arg name="multiplier" default="3.0"/>
     <arg name="amplitude" default="8.0"/>
     <arg name="x" default="0.0"/>
-    <node pkg="lfdrone" type="sweep_mission.py" name="mission_sweeper" output="screen" required="true"
+    <node pkg="torf" type="sweep_mission.py" name="mission_sweeper" output="screen" required="true"
             args="
                 --duration_out $(arg duration_out)
                 --mission_hgt  $(arg mission_hgt)
@@ -48,7 +48,7 @@
 
     ROSBAG
     <arg name="bag_prefix" default="sweep_mission"/>
-    <include file="$(find lfdrone)/launch/bag_cx_mission.launch">
+    <include file="$(find torf)/launch/bag_cwssim_mission.launch">
         <arg name="bag_prefix" value="$(arg bag_prefix)"/>
     </include>
 

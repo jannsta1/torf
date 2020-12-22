@@ -9,8 +9,8 @@ from time import time
 import glob
 import os
 
-from torf.utils import *
-from torf.base import *
+from utils import *
+from base import *
 
 
 ############################################################################################

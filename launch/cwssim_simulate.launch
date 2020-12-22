@@ -16,7 +16,7 @@
     <arg name="main_image_width" default="235"/>
     <arg name="main_image_height" default="150"/>
 
-    <include file="$(find lfdrone)/src/torf/launch/gimbal_drone.launch">
+    <include file="$(find torf)/launch/gimbal_drone.launch">
         <arg name="world" value="$(arg world)"/>
         <arg name="vehicle" value="$(arg vehicle)"/>
         <!--<arg name="verbose" value="true"/>-->
@@ -63,7 +63,7 @@
     <arg name="close_to_end_thresh_high" default="25"/>
     <arg name="close_to_end_thresh_low" default="8"/>
 
-    <node pkg="lfdrone" type="torf_ros.py" name="cwssim_node" output="screen" required="true"
+    <node pkg="torf" type="torf_ros.py" name="cwssim_node" output="screen" required="true"
             args="
                 --mission_type $(arg mission_type)
                 --duration_out $(arg duration_out)
@@ -101,13 +101,13 @@
               "
         />
 
-  IMAGE WATCHDOG NODE
-    <arg name="im_watchdog" default="true"/>
-    <node pkg="lfdrone" type="image_watchdog_node.py" name="image_watchdog" output="screen" required="false" if="$(arg im_watchdog)"/>
+  <!--IMAGE WATCHDOG NODE-->
+    <!--<arg name="im_watchdog" default="true"/>-->
+    <!--<node pkg="lfdrone" type="image_watchdog_node.py" name="image_watchdog" output="screen" required="false" if="$(arg im_watchdog)"/>-->
 
     ROSBAG
     <arg name="bag_prefix" default="sweep_mission"/>
-    <include file="$(find lfdrone)/src/torf/launch/bag_cwssim_mission.launch">
+    <include file="$(find torf)/launch/bag_cwssim_mission.launch">
         <arg name="bag_prefix" value="$(arg bag_prefix)"/>
         <arg name="save_images" value="$(arg save_images)"/>
     </include>

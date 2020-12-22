@@ -39,7 +39,7 @@
     <arg name="cwssim_thresh" default="0.82"/>
     <arg name="mission_type" default="active"/>
 
-    <node pkg="lfdrone" type="torf_ros.py" name="cwssim_node" output="screen" required="true"
+    <node pkg="torf" type="torf_ros.py" name="cwssim_node" output="screen" required="true"
             args="
                 --mission_type $(arg mission_type)
                 --duration_out $(arg duration_out)
@@ -59,9 +59,9 @@
               "
         />
 
-    IMAGE WATCHDOG NODE
-    <arg name="im_watchdog" default="true"/>
-    <node pkg="lfdrone" type="image_watchdog_node.py" name="image_watchdog" output="screen" required="false" if="$(arg im_watchdog)"/>
+    <!--IMAGE WATCHDOG NODE-->
+    <!--<arg name="im_watchdog" default="true"/>-->
+    <!--<node pkg="lfdrone" type="image_watchdog_node.py" name="image_watchdog" output="screen" required="false" if="$(arg im_watchdog)"/>-->
 
     ROSBAG
     <arg name="bag_prefix" default="cwssim_real"/>
