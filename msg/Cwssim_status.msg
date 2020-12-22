@@ -6,7 +6,6 @@ int32 stored_qty
 int32 sweep_index                     # how many sweeps have we don or, which sweep are we on?
 float32 best_score_previous_run       # waht was our best score on the previous sweep?
 
-
 ## things we could add:
 # longitudinal_slowdown_factor
 # lateral_slowdown_factor

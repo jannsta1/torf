@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 # global imports
-from lfdrone.msg import Cwssim_status
+from torf.msg import Cwssim_status
 import numpy as np
 import roslaunch
 import rosgraph
@@ -12,11 +12,8 @@ import sys
 import os
 
 # local imports
-from torf.definitions_cwssim import ROSLAUNCH, ROSLOG
+from ..definitions_cwssim import ROSLAUNCH, ROSLOG
 from arg_parser import *
-
-
-
 
 """
 A script for automating several runs of the torf_ros node in a simulation environment using the roslaunch api

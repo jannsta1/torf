@@ -14,9 +14,17 @@ To run in simulation initialise the quick start roslaunch file with:
 roslaunch torf cwssim_simulate.launch world:=<WORLD_ON_YOUR_GAZEBO_PATH>
 ```
 
-note that you will need to provide a gazebo world that is in your path - custom worlds can be provided on request.
+note that you will need to provide a gazebo world that is in your GAZEBO_MODEL_PATH, path - custom worlds can be provided on request.
 
 # Batch testing procedure
+
+The *autorun* package is a convenient tool for running batches of experiments. It uses the roslaunch api to  
+
+```
+cd autorun_dirtorf/src/autorun
+python 
+```
+
 
 # Running on hardware
 ## Hardware dependencies
