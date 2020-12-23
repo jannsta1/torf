@@ -1,13 +1,18 @@
+# global imports
 from datetime import datetime
 from warnings import warn
 from scipy import signal
 import numpy as np
+import cv2
+import os
 
+# local imports
+from definitions_cwssim import IM_SEQUENCES
 
 def matlab_style_gauss2D(shape=(3,3),sigma=0.5):
     """
-    2D gaussian mask - should give the same result as MATLAB's
-    fspecial('gaussian',[shape],[sigma])
+    2D gaussian mask - should give the same result as MATLAB's fspecial('gaussian',[shape],[sigma])
+
     """
     m,n = [(ss-1.)/2. for ss in shape]
     y,x = np.ogrid[-m:m+1,-n:n+1]
@@ -51,6 +56,33 @@ def date_string():
 
 
 def pol2cart(rho, phi):
+    """
+    convert from polar coordinates to cartesian coordinates
+    :param rho: length
+    :param phi: angle
+    :return:
+    """
     x = rho * np.cos(phi)
     y = rho * np.sin(phi)
-    return(x, y)
+    return (x, y)
+
+
+def get_fwd_drone_ims(resize=False, im_w=235, im_h=150, resize_method=cv2.INTER_CUBIC):
+
+    files_dir = os.path.join(IM_SEQUENCES, "fwd_drone")
+    im_list = []
+    for idx in range(40):
+        im_name = files_dir + '/fwd_drone_' + str(idx + 1) + '.jpg'
+
+        this_im = cv2.imread(im_name, cv2.IMREAD_GRAYSCALE)
+        if resize:
+            # kernel_size = 5
+            # this_im = cv2.GaussianBlur(this_im, (kernel_size, kernel_size), 0)
+            this_im = cv2.resize(this_im, (im_w, im_h), resize_method)
+        im_list.append(this_im)
+
+    if len(im_list) == 0:
+        raise ('No images found in {}'.format(files_dir))
+    ims = np.asarray(im_list)
+
+    return ims

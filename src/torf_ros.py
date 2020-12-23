@@ -34,12 +34,12 @@ class TorfCwssimHomingMission(Pyx4_base):
     """
     A class that provides logic for the transverse oscillating route following approach outlined in (paper pending)
 
+    See 'argparse_sweep_mission.py' for details of input arguments
 
     ...
 
     Attributes
     ----------
-
 
     Methods
     -------

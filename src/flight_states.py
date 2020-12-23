@@ -32,7 +32,6 @@ class Sweep_wave(Generic_mission_state):
                  **kwargs
                  ):
 
-
         super(Sweep_wave, self).__init__(
                                             flight_instruction_type=flight_instruction_type,
                                             state_label=state_label,
@@ -70,7 +69,6 @@ class Sweep_wave(Generic_mission_state):
 
         self.sweep_direction *= -1
         self.x_tgt, self.y_tgt = pol2cart(self.mission_vel_tgt, self.this_hdg_tgt)
-
 
     def precondition_check(self):
 
@@ -111,7 +109,6 @@ class Sweep_wave(Generic_mission_state):
 
 class Sweep_wave_familiarity(Sweep_wave):
     """
-
     This modulated version of the sweep wave is as per the Sweep wave but the reverse in direction of the sweep wave
     can be instigated based on the state of the visual processing function. Here torf is used to evaluate the view
     familiarity and the duration of the sweepback is calculated based on the location of the previous best score

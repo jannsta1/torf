@@ -39,7 +39,8 @@ class ImageWatchdog(object):
                 self.pixel_vals_previous = np.clip(self.pixel_vals_this + 10, 0, 255)
                 msg_received = True
             except rospy.ROSException as e:
-                rospy.logwarn_throttle(5, 'camera watchdog node timed out waiting for image message - traceback was {}'.format(e))
+                rospy.logwarn_throttle(5, 'camera watchdog node timed out waiting for image message \
+                                       - traceback was {}'.format(e))
             # except e:
             #     rospy.logwarn(('{} happened'.format(e)))
 

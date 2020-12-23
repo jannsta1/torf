@@ -1,14 +1,12 @@
-
-
 from __future__ import division
 
+# global imports
 from multiprocessing import RawArray, Pool
 from functools import partial
 from ctypes import c_double
 from time import time
-import glob
-import os
 
+# local imports
 from utils import *
 from base import *
 
@@ -17,6 +15,11 @@ from base import *
 # this block of code is here because we can't use instance methods in pool so using global vars instead
 var_dict = {}
 def init_worker(band_1_bank, band_1_bank_shape, band_2_bank, band_2_bank_shape, window, w):
+    """
+    Initialises data structures for applying CWSSIM to the lowest level of a CWSSIM pyramid with 2 orientation bands
+
+    # todo - create an arbitrary orientation version
+    """
     # Use a dictionary to show the data mapping to our worker
     var_dict['band_1_bank'] = band_1_bank
     var_dict['band_1_bank_shape'] = band_1_bank_shape
@@ -26,6 +29,16 @@ def init_worker(band_1_bank, band_1_bank_shape, band_2_bank, band_2_bank_shape, 
     var_dict['w'] = w
 
 def worker_func(this_band_1, this_band_2, im_idx):
+    """
+    Pool worker function for applying CWSSIM to the lowest level of a CWSSIM pyramid with 2 orientation bands
+
+    # todo - create an arbitrary orientation version
+
+    :param this_band_1: lowest level CWSSIM mask orientation 1
+    :param this_band_2: lowest level CWSSIM mask orientation 2
+    :param im_idx: index of image in memory bank to compare with
+    :return:
+    """
     # Simply computes the sum of the i-th row of the input matrix X
     band_1_bank = np.frombuffer(var_dict['band_1_bank'], dtype=np.csingle).reshape(var_dict['band_1_bank_shape'])
     band_2_bank = np.frombuffer(var_dict['band_2_bank'], dtype=np.csingle).reshape(var_dict['band_2_bank_shape'])
@@ -46,7 +59,6 @@ class Cwsim_container(object):
     A class that stores a bank of images and allows for a query image to be compared via torf with all the images in
     the bank. For efficiency we just store the banks of the lowest level of the torf pyramid
 
-
     """
 
     def __init__(self, im_h, im_w, max_depth, levels=5, nbands=2, winsize=7, real_data_dtype=np.float32,
@@ -55,7 +67,6 @@ class Cwsim_container(object):
         self.real_data_dtype = real_data_dtype
         self.complex_data_dtype = complex_data_dtype
 
-        # todo - need to use the im_h, im_w properties
         self.im_h = im_h
         self.im_w = im_w
         self.levels = levels
@@ -64,8 +75,7 @@ class Cwsim_container(object):
         self.pyramid_constructor = Steerable_complex_wavelet_pyramid(im_h=im_h, im_w=im_w, levels=levels, nbands=nbands)
 
         band_h, band_w = self.pyramid_constructor.lowest_level_dim
-        print('lowest level dims:')
-        print(band_h, band_w)
+        print('lowest level dims: {}x{}'.format(band_h, band_w))
 
         self.band_list = [None] * self.nbands
 
@@ -81,16 +91,24 @@ class Cwsim_container(object):
 
     @property
     def qty_images_stored(self):
+        """
+        How many images have been added to the memory bank
+        """
         return self.__current_image_cnt
-
 
     @property
     def memory_full(self):
+        """
+        Is the memory bank full?
+        """
         return self.__current_image_cnt >= self.max_depth
 
-
     def add_image(self, im):
-
+        """
+        Add image to the memory bank
+        :param im: Image to add - expected datatype uint8 numpy array
+        :return:
+        """
         if not self.memory_full:
             # todo - avoid this memory copy?
             coefficients = self.pyramid_constructor.build_scf(im=im)
@@ -109,19 +127,21 @@ class Cwsim_container(object):
         :param im:
         :return:
         """
-        query_band1, query_band2 = self.pyramid_constructor.build_scf(im=im)
+        coefficients = self.pyramid_constructor.build_scf(im=im)
         results = np.zeros(self.qty_images_stored)
+
         for im_idx in range(self.qty_images_stored):
-            results[im_idx] = self.cwssim_index(im1_band1=query_band1,
-                                     im1_band2=query_band2,
-                                     im2_band1=self.band_1_bank[im_idx, :, :],
-                                     im2_band2=self.band_2_bank[im_idx, :, :])
+            results[im_idx] = self.cwssim_index(coefficients_1=coefficients,
+                                                coefficients_2=self.coefficient_tensor[im_idx, :, :, :])
         return results
 
-
     def max_query_image(self, im):
+        """
+        Returns maximum value when an image is querried against all images in the memory bank
+        :param im:
+        :return:
+        """
         return np.max(self.query_image(im))
-
 
     def max_query_image_with_index(self, im):
         """
@@ -132,21 +152,28 @@ class Cwsim_container(object):
         result = self.query_image(im)
         return np.max(result), np.argmax(result)
 
-
-    # todo - use the version in utils instead
+    # todo - harmonise this version with multiproces version (currently in utils)
     def cwssim_index(self, coefficients_1, coefficients_2):
-
+        """
+        calculate similarity between 2 sets of coefficients
+        :param coefficients_1:
+        :param coefficients_2:
+        :return:
+        """
         mean_list = []
         for band in range(self.nbands):
             mean_list.append(self.process_cwssim_subband(coefficients_1[band], coefficients_2[band]))
-
         return np.mean(mean_list)
 
-
     def self_im_query(self, im1_idx, im2_idx):
+        """
+        compare the coefficients of 2 images that are already in the memory bank
+        :param im1_idx:
+        :param im2_idx:
+        :return:
+        """
         return self.cwssim_index(coefficients_1=self.coefficient_tensor[im1_idx, :, :, :],
                                  coefficients_2=self.coefficient_tensor[im2_idx, :, :, :])
-
 
     def resize_memory_bank(self, discard_last=False):
         """
@@ -165,19 +192,24 @@ class Cwsim_container(object):
         else:
             self.coefficient_tensor = self.coefficient_tensor[0:self.qty_images_stored, :, :, :]
 
-
     def reverse_image_ids(self):
-        # print self.band_1_bank.shape
-        # print self.band_2_bank.shape
-        # print self.qty_images_stored
+        """
+        reverse the order of images stored in the memory bank
+
+        sometimes useful when the order images are stored relates to the location they were stored
+        :return:
+        """
         self.resize_memory_bank()
         self.coefficient_tensor = self.coefficient_tensor[::-1, :, :, :]
-        # print self.band_1_bank.shape
-        # print self.band_2_bank.shape
-
 
     def self_im_query_all(self, query_idx, plot_output=False):
+        """
+        compare an image already stored in the memory bank with all other images in the memory bank
 
+        :param query_idx:
+        :param plot_output:
+        :return:
+        """
         t1 = time()
         results = np.zeros(self.qty_images_stored)
         for idx in range(self.qty_images_stored):
@@ -189,33 +221,35 @@ class Cwsim_container(object):
             plt.show()
         return results
 
-    # todo - use the version in utils instead
+    # todo - harmonise with the version in utils?
     def process_cwssim_subband(self, im1_subband, im2_subband, mode='valid'):
+        """
+        find the correlation of 2 CWSSIM image subbands using the covariance of the local window defined by self.window
+        and the weights, self.w
 
+        :param im1_subband:
+        :param im2_subband:
+        :param mode:
+        :return:
+        """
         corr = im1_subband * np.conj(im2_subband)
         varr = np.square(np.abs(im1_subband)) + np.square(np.abs(im2_subband))
-        # print np.shape(corr), np.shape(varr), np.shape(self.window)
-        # corr_band = signal.convolve2d(self.window, np.rot90(corr), mode='valid')
-        # varr_band = signal.convolve2d(self.window, np.rot90(varr), mode='valid')
         corr_band = signal.convolve2d(self.window, corr, mode=mode)
         varr_band = signal.convolve2d(self.window, varr, mode=mode)
-
-        # print np.shape(corr_band), np.shape(varr_band), np.shape(self.window)
         # todo - add K in? what is a good value for this? cssim_map = (2 * np.abs(corr_band) + K). / (varr_band + K)
         cssim_map = (2 * np.abs(corr_band)) / (varr_band)
 
-
-        return np.sum( np.sum( cssim_map * self.w) )
-
-
-    def export_band2matlab(self, img_idx):
-        sio.savemat('np_cwssim_bands_from_im_{}'.format(img_idx), {'np_band_1':self.band_1_bank[img_idx,:,:],'np_band_2':self.band_2_bank[img_idx,:,:] })
-
+        return np.sum(np.sum(cssim_map * self.w))
 
     #############################################################################
     # multiprocessing enabled functions
 
     def max_query_image_mp(self, im):
+        """
+        Returns the best score
+        :param im:
+        :return:
+        """
         return np.max(self.query_image_mp(im))
 
 
@@ -226,8 +260,6 @@ class Cwsim_container(object):
         :return:
         """
         result = self.query_image_mp(im)
-        # print result
-        # print np.argmax(result)
         return np.max(result), np.argmax(result)
 
 
@@ -352,7 +384,7 @@ class Cwsim_container_from_ims(Cwsim_container):
                  ):
 
         max_depth, im_h, im_w = np.shape(ims)
-        print (max_depth, im_h, im_w)
+
         super(Cwsim_container_from_ims, self).__init__(im_h=im_h, im_w=im_w, max_depth=max_depth,
                                                        levels=levels, nbands=nbands, winsize=winsize,
                                                        real_data_dtype=real_data_dtype,
@@ -364,96 +396,32 @@ class Cwsim_container_from_ims(Cwsim_container):
             self.add_image(im)
 
 
-def get_fwd_drone_ims(resize=False, im_w=235, im_h=150, resize_method=cv2.INTER_CUBIC):
-    from definitions_cwssim import IM_SEQUENCES
-    files_dir = os.path.join(IM_SEQUENCES, "fwd_drone")
-    im_list = []
-    for idx in range(40):
-        im_name = files_dir + '/fwd_drone_' + str(idx + 1) + '.jpg'
-
-        this_im = cv2.imread(im_name, cv2.IMREAD_GRAYSCALE)
-        if resize:
-            # kernel_size = 5
-            # this_im = cv2.GaussianBlur(this_im, (kernel_size, kernel_size), 0)
-            this_im = cv2.resize(this_im, (im_w, im_h), resize_method)
-        im_list.append(this_im)
-
-    ims = np.asarray(im_list)
-    return ims
-
-def get_test_images(directory, image_extension='.jpg'):
-    '''
-    :param directory:
-    :return:
-    '''
-
-    # todo - this class isn't working - the images are jumbled up find out why
-    unsorted = [[file_name, cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)] for file_name in
-                glob.glob(os.path.join(directory) + "/*.jpg")]
-
-    unsorted_images = [item[1] for item in unsorted]
-    unsorted_file_idx = [contents[0].split("_")[-1][:-4] for contents in unsorted]
-    sort_indexes = np.argsort(unsorted_file_idx)
-
-    sorted_all = [[file_name, image] for file_name, image in
-                  sorted(zip(sort_indexes, unsorted_images), key=lambda pair: pair[0])]
-
-    sorted_images = [item[1] for item in sorted_all]
-    # print sorted_all[0][0]
-    return sorted_images, sort_indexes
-
-
-def test_response_across_im_series(test_idx=20, levels=5, im_w=235, im_h=150):
+def response_across_im_series(ims=None, multiprocess=True, test_idx=20, levels=5, im_w=235, im_h=150,
+                              plot_output=False):
     """
     perform torf against every image in dataset - the highest response should be at the test_idx
 
     :param test_idx:
     :return:
     """
-    ims = get_fwd_drone_ims(im_w=im_w, im_h=im_h)
+
+    if not ims:
+        ims = get_fwd_drone_ims(im_w=im_w, im_h=im_h)
+
     cc = Cwsim_container_from_ims(ims=ims, levels=levels)
-    # test_im = ims[1]
-    # cc.max_query_image(test_im)
+    if multiprocess:
+        cc.prepare_memory_bank_outside()
+        results = cc.self_im_query_all_mp(test_idx, plot_output=plot_output)
+    else:
+        results = cc.self_im_query_all(test_idx, plot_output=plot_output)
 
-    cc.self_im_query_all(test_idx, plot_output=True)
+    return results
 
-def test_response_across_im_series_mp(test_idx=20, levels=5, im_w=235, im_h=150):
-    """
-    perform torf against every image in dataset - the highest response should be at the test_idx
-
-    :param test_idx:
-    :return:
-    """
-    ims = get_fwd_drone_ims()
-    cc = Cwsim_container_from_ims(ims=ims, levels=levels)
-    # test_im = ims[1]
-    # cc.max_query_image(test_im)
-    cc.prepare_memory_bank_outside()
-    cc.self_im_query_all(test_idx, plot_output=True)
-
-
-def test_response_across_resized_im_series(test_idx=20, levels=5, im_w=235, im_h=150, resize_method=cv2.INTER_CUBIC):
-    """
-    perform torf against every image in dataset - the highest response should be at the test_idx
-
-    :param test_idx:
-    :return:
-    """
-    ims = get_fwd_drone_ims(resize=True, im_w=im_w, im_h=im_h, resize_method=resize_method)
-    # ims = get_fwd_drone_ds_ims()
-    cc = Cwsim_container_from_ims(ims=ims, levels=levels)
-    # test_im = ims[1]
-    # cc.max_query_image(test_im)
-    # cv2.imshow('test', ims[1, :, :])
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
-    cc.self_im_query_all(test_idx, plot_output=True)
 
 if __name__ == '__main__':
 
-    test_response_across_im_series(levels=5)
-    test_response_across_im_series_mp(levels=5)
+    response_across_im_series(plot_output=True)
+    response_across_im_series(plot_output=True, multiprocess=False)
 
 
 

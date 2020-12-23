@@ -21,13 +21,9 @@ from __future__ import division
 from scipy.interpolate import interp1d
 from scipy.misc import factorial
 import matplotlib.pyplot as plt
-from warnings import warn
-import scipy.io as sio
 from copy import copy
 import numpy as np
 import cv2
-
-from definitions_cwssim import DATA as CWSSIM_DATA
 
 LOW_MASK = 1
 HI_MASK = 2
@@ -35,11 +31,7 @@ BAND1 = 1
 BAND2 = 2
 
 LEVEL_1_IDX = 0
-LEVEL_2_IDX = 1
-LEVEL_3_IDX = 2
-LEVEL_4_IDX = 3
-LEVEL_5_IDX = 4
-LEVEL_6_IDX = 5
+
 
 class Scy_pyr_builder_base(object):
 
@@ -365,7 +357,6 @@ def plot_masks(im_h=150, im_w=235):
     :param im_w:
     :return:
     """
-
     py = Steerable_complex_wavelet_pyramid(im_h=im_h, im_w=im_w)
 
     py.plot_lo_masks()

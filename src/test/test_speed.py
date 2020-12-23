@@ -1,20 +1,12 @@
-#!/usr/bin/env python2
-# ***************************************************************************
-
-# ***************************************************************************/
-
-#
-# @author Jan Stankiewicz
-
 from __future__ import division
 
-from src.definitions_cwssim import DATA
+# global imports
 import pytest
-import os
-import cv2
-from time import time
 
-from torf.cwssim_container import *
+# local imports
+from src.definitions_cwssim import DATA
+from src.cwssim_container import *
+
 
 @pytest.fixture
 def sidesweep_image_sequence(file_prefix='side_drone'):
@@ -27,10 +19,11 @@ def sidesweep_image_sequence(file_prefix='side_drone'):
         im_list.append(cv2.imread(im_name, cv2.IMREAD_GRAYSCALE))
     return im_list
 
+
 def test_compare_serial_with_multiprocess(sidesweep_image_sequence):
     """
     To check if we are getting a speed gain from multiprocessing. NB. the size of image bank will be a factor on whether
-    this is worthwhil or not
+    this is worthwhile or not
     
     :param sidesweep_image_sequence:
     :return:
@@ -57,8 +50,7 @@ def test_compare_serial_with_multiprocess(sidesweep_image_sequence):
         t2 = time() - t1
         multip_times.append(t2)
     multip_mean = np.mean(multip_times)
-    print ('Serial mean: {}, multip mean: {} - speedup = {}'.format(serial_mean, multip_mean,
-                                                                    serial_mean / multip_mean))
+    print('Serial mean: {}, multip mean: {} - speedup = {}'.format(serial_mean, multip_mean,serial_mean / multip_mean))
 
 
 def test_compare_single_and_multiprocess_results(sidesweep_image_sequence):
@@ -85,8 +77,6 @@ def test_compare_single_and_multiprocess_results(sidesweep_image_sequence):
     assert np.allclose(results_single_proc, results_multi_proc)
 
 
-
-
 @pytest.mark.parametrize("dtypes", [(np.float32, np.csingle), (np.float64, np.complex)])
 def test_dtype(sidesweep_image_sequence, dtypes):
     """
@@ -101,6 +91,8 @@ def test_dtype(sidesweep_image_sequence, dtypes):
     print ('testing dtypes: {}'.format(dtypes))
     cc = Cwsim_container_from_ims(ims=sidesweep_image_sequence, real_data_dtype=dtypes[0], complex_data_dtype=dtypes[1])
     t2 = time()
+
+
     for im in sidesweep_image_sequence:
         cc.query_image(im)
     t3 = time()

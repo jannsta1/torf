@@ -31,3 +31,6 @@ python
 This software was designed to operate with a bluefox camera but could be readily adopted to any other camera system with 
 a ROS driver. The package should operate with any multirotor that uses a PX4 as its main flight controller.
 
+# Contributing
+## unit tests 
+Unit tests are stored in ```src/test``` folder - please run these before submitting a pull request. 

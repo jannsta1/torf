@@ -88,7 +88,6 @@
                 --cwssim_thresh $(arg cwssim_thresh)
                 --t_familiar $(arg t_familiar)
                 --outbound_configuration $(arg outbound_configuration)
-                --outbound_sin_freq $(arg outbound_sin_freq)
                 --cwssim_thresh $(arg cwssim_thresh)
                 --flip_images $(arg flip_images)
                 --hdg_in_offset $(arg hdg_in_offset)

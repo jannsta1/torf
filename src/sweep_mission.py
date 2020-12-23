@@ -5,7 +5,8 @@ from __future__ import division
 from flight_states import Sweep_wave, Sweep_wave_familiarity
 from pyx4_base.pyx4_base import Pyx4_base
 
-from cx_model_px4.flight_behaviours import *
+from cx_model_px4.flight_behaviours import Sin_wave_2  # todo - this should be moved to pyx4
+from pyx4_base.mission_states import *
 from mavros_msgs.msg import PositionTarget
 
 from argparse_sweep_mission import *
