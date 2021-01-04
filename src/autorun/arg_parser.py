@@ -10,7 +10,7 @@ import argparse
 import rospy
 import sys
 
-from torf.argparse_sweep_mission import sm_argparse, str2bool
+from argparse_sweep_mission import sm_argparse, str2bool
 
 VALID_WORLD_LIST = ['flat', 'bumpy', 'Furkastrasse', 'Furkastrasse_textured', 'forest_plane', 'forest_plane_fine', 'Seville']
 

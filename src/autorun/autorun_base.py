@@ -12,8 +12,10 @@ import sys
 import os
 
 # local imports
-from ..definitions_cwssim import ROSLAUNCH, ROSLOG
 from arg_parser import *
+
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from definitions_cwssim import ROSLAUNCH, ROSLOG
 
 """
 A script for automating several runs of the torf_ros node in a simulation environment using the roslaunch api
