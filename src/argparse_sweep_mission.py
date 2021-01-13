@@ -98,7 +98,8 @@ def sm_argparse(sys_argv_in, started_by_ros=True, return_args=True, subparsers=N
                         help='minimum score before we consider a match to be on the route')
 
     # camera / view parameters
-    parser.add_argument('--flip_images', type=str2bool, default=True)
+    parser.add_argument('--flip_images', type=str2bool, default=True, help="NOTE: If we don't flip images then we \
+                        assume that a 3 leg mission is required learn->fly back to start->home")
     parser.add_argument('--winsize', type=int, default=7)
     parser.add_argument('--im_w', type=int, default=235, help="Camera resolution (horizontal)")
     parser.add_argument('--im_h', type=int, default=150, help="Camera resolution (vertical)")

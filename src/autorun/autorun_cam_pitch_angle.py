@@ -11,6 +11,12 @@ delta = args_dict['tester'].delta
 pitches = np.arange(lower, upper, delta)
 print ('testing outbound height values: {} with inbound value always at {}'.format(pitches, args_dict['sm'].mission_hgt))
 
+args_dict['tester'].vehicle = 'typhoon_2cam'
+# args_dict['tester'].worlds = 'Seville.world'
+args_dict['sm'].flip_images = False
+args_dict['sm'].x_offset = -10
+args_dict['sm'].duration_out = 15
+
 # iterate through tests
 passed = []
 list_of_summaries = []
