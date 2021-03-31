@@ -121,8 +121,8 @@ def sm_argparse(sys_argv_in, started_by_ros=True, return_args=True, subparsers=N
     # by default the outbound height is the same as the inbound height
     if np.isnan(args.outbound_hgt):
         args.outbound_hgt = args.mission_hgt
-        print ('Using the same mission heights outbound:{} inbound:{}'.format(args.outbound_hgt, args.mission_hgt))
+        print(('Using the same mission heights outbound:{} inbound:{}'.format(args.outbound_hgt, args.mission_hgt)))
     else:
-        print ('Using a different mission heights outbound:{} inbound:{}'.format(args.outbound_hgt, args.mission_hgt))
+        print(('Using a different mission heights outbound:{} inbound:{}'.format(args.outbound_hgt, args.mission_hgt)))
 
     return args

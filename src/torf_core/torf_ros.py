@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # ***************************************************************************
 
 # ***************************************************************************/
@@ -6,20 +6,23 @@
 #
 # @author Jan Stankiewicz
 #
-from __future__ import division
+
 
 # global imports
 from argparse_sweep_mission import *
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from cwssim_container import *
+from threading import Thread
 import rosparam
+import sys
 
 # local imports
 from definitions_cwssim import Homing_outcome, CWSSIM_STATE, MULTIPROCESSING_STATUS
 from sweep_mission import generate_sweep_mission
 from torf.msg import Cwssim_status
-from pyx4_base.pyx4_base import *
+from pyx4_base.pyx4_base_classes import Pyx4_base
+from pyx4_base.definitions_pyx4 import State_estimation_method
 
 bridge = CvBridge()
 
@@ -27,7 +30,7 @@ bridge = CvBridge()
 try:
    from queue import Queue
 except ImportError:
-   import Queue as Queue
+   import queue as Queue
 
 
 class TorfCwssimHomingMission(Pyx4_base):
@@ -192,9 +195,9 @@ class TorfCwssimHomingMission(Pyx4_base):
         self.cwssim_status.header.stamp = rospy.Time.now()
         self.cwssim_status.state = self.cwssim_state._name_
         self.cwssim_status.score = self.cwssim_score
-        self.cwssim_status.index = self.cwssim_score_idx
-        self.cwssim_status.stored_qty = self.cwssim.qty_images_stored
-        self.cwssim_status.sweep_index = self.sweep_index
+        self.cwssim_status.index = int(self.cwssim_score_idx)
+        self.cwssim_status.stored_qty = int(self.cwssim.qty_images_stored)
+        self.cwssim_status.sweep_index = int(self.sweep_index)
         self.cwssim_status.best_score_previous_run = self.best_cwssim_score_previous_run
         # self.cwssim_status.longitudinal_slowdown_factor =
         # self.cwssim_status.lateral_slowdown_factor =
@@ -342,8 +345,8 @@ if __name__ == '__main__':
 
     sm_flight_instructions = generate_sweep_mission(args_in=args)
 
-    print ("Parsed flight instructions:\n\n", sm_flight_instructions, "\n")
-    print ('sweep mission args:\n\n', args, "\n")
+    print(("Parsed flight instructions:\n\n", sm_flight_instructions, "\n"))
+    print(('sweep mission args:\n\n', args, "\n"))
     cwssim_class = TorfCwssimHomingMission(
                             flight_instructions=sm_flight_instructions,
                             node_namespace=node_namespace,

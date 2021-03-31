@@ -16,10 +16,10 @@ Where possible, variable names have been preserved for easy comparison with this
 
 """
 
-from __future__ import division
+
 
 from scipy.interpolate import interp1d
-from scipy.misc import factorial
+from scipy.special import factorial
 import matplotlib.pyplot as plt
 from copy import copy
 import numpy as np
@@ -335,19 +335,19 @@ class Steerable_complex_wavelet_pyramid(Scy_pyr_builder_base):
 def speed_test(repeats=1000):
 
     from time import time
-    from definitions_cwssim import IM_SEQUENCES
+    from .definitions_cwssim import IM_SEQUENCES
     from os import path
 
     p_build = Steerable_complex_wavelet_pyramid(im_h=150, im_w=235)
     im = cv2.imread(path.join(IM_SEQUENCES, 'fwd_drone', 'fwd_drone_1.jpg'), 0)
 
     t_start = time()
-    print ('performing speed test with {} repeats'.format(repeats))
+    print(('performing speed test with {} repeats'.format(repeats)))
     for idx in range(repeats):
         coefficients = p_build.build_scf(im)
     t_end = time()
     t_mean = (t_end - t_start) / repeats
-    print ('mean processing time was {}s'.format(t_mean))
+    print(('mean processing time was {}s'.format(t_mean)))
 
 
 def plot_masks(im_h=150, im_w=235):

@@ -1,5 +1,5 @@
-#!/usr/bin/env python2
-from __future__ import division
+#!/usr/bin/env python3
+
 
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge

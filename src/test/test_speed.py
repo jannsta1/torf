@@ -1,11 +1,11 @@
-from __future__ import division
+
 
 # global imports
 import pytest
 
 # local imports
-from src.definitions_cwssim import DATA
-from src.cwssim_container import *
+from torf_core.definitions_cwssim import DATA
+from torf_core.cwssim_container import *
 
 
 @pytest.fixture
@@ -50,7 +50,7 @@ def test_compare_serial_with_multiprocess(sidesweep_image_sequence):
         t2 = time() - t1
         multip_times.append(t2)
     multip_mean = np.mean(multip_times)
-    print('Serial mean: {}, multip mean: {} - speedup = {}'.format(serial_mean, multip_mean,serial_mean / multip_mean))
+    print(('Serial mean: {}, multip mean: {} - speedup = {}'.format(serial_mean, multip_mean,serial_mean / multip_mean)))
 
 
 def test_compare_single_and_multiprocess_results(sidesweep_image_sequence):
@@ -88,7 +88,7 @@ def test_dtype(sidesweep_image_sequence, dtypes):
     :return:
     """
     t1 = time()
-    print ('testing dtypes: {}'.format(dtypes))
+    print(('testing dtypes: {}'.format(dtypes)))
     cc = Cwsim_container_from_ims(ims=sidesweep_image_sequence, real_data_dtype=dtypes[0], complex_data_dtype=dtypes[1])
     t2 = time()
 
@@ -98,5 +98,5 @@ def test_dtype(sidesweep_image_sequence, dtypes):
     t3 = time()
     img_qty = len(sidesweep_image_sequence)
     process_time_per_image = (t3-t2)/img_qty
-    print ('preperation took {} processing {} images took {}'.format(t2 - t1, img_qty, t3-t2))
-    print ('processing time per image = {}'.format(process_time_per_image))
+    print(('preperation took {} processing {} images took {}'.format(t2 - t1, img_qty, t3-t2)))
+    print(('processing time per image = {}'.format(process_time_per_image)))

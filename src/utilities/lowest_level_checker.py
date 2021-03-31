@@ -4,15 +4,14 @@ A script that calculates the dimensions of the lowest level of a CWSSIM pyramid
 Note - we use the actual pyramid decompositions rather than logarithms in case the "ceil" operations effect the results
 
 """
-from __future__ import division
+
 
 # global imports
 from scipy import signal
-import numpy as np
 
 # local imports
-from src.utils import generate_window
-from src.base import *
+from torf_core.utils import generate_window
+from torf_core.base import *
 
 levels = 5
 nbands = 2
@@ -40,4 +39,4 @@ for im_w in im_ws:
     dummy_pic = np.ones((band_h, band_w))
     kernel_res = signal.convolve2d(window, dummy_pic, mode='same', boundary='fill')
     kernel_size = np.shape(kernel_res)
-    print ('input: {} output: {} kernel size {}'.format(im_w, band_w, kernel_size))
+    print(('input: {} output: {} kernel size {}'.format(im_w, band_w, kernel_size)))

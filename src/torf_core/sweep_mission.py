@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-from __future__ import division
+
 
 from flight_states import Sweep_wave, Sweep_wave_familiarity
-from pyx4_base.pyx4_base import Pyx4_base
+from pyx4_base.pyx4_base_classes import Pyx4_base
 
 from cx_model_px4.flight_behaviours import Sin_wave_2  # todo - this should be moved to pyx4
 from pyx4_base.mission_states import *

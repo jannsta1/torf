@@ -1,21 +1,18 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # global imports
 from torf.msg import Cwssim_status
 import numpy as np
 import roslaunch
 import rosgraph
-import argparse
-import rospy
 import time
-import sys
 import os
 
 # local imports
 from arg_parser import *
 
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from definitions_cwssim import ROSLAUNCH, ROSLOG
+from torf_core.definitions_cwssim import ROSLAUNCH, ROSLOG
 
 """
 A script for automating several runs of the torf_ros node in a simulation environment using the roslaunch api
@@ -61,7 +58,7 @@ class Cwssim_launch_node(object):
         place required arguments in the sys.argv environment
         :return:
         """
-        for key, val in self.__roslaunch_arguments_dict.items():
+        for key, val in list(self.__roslaunch_arguments_dict.items()):
             # print key, type(key), val, type(val)
             item = key + ":= " + str(val)
             sys.argv.append(item)
@@ -71,7 +68,7 @@ class Cwssim_launch_node(object):
         clean up arguments from the sys.argv environment
         :return:
         """
-        for key, val in self.__roslaunch_arguments_dict.items():
+        for key, val in list(self.__roslaunch_arguments_dict.items()):
             item = key + ":= " + str(val)
             sys.argv.remove(item)
 
@@ -157,7 +154,7 @@ def do_autorun(test_args, cwssim_args, save_name=None, autosort=False, test_id=N
             else:
                 bag_prefix = 'sweep_mission_' + world[0:-6] + '_r_' + str(jdx)
 
-            print ('saving too {}'.format(bag_prefix))
+            print(('saving too {}'.format(bag_prefix)))
             # print (bag_path)
             print (ROSLOG)
             print (ROSLAUNCH)

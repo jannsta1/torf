@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Allows passing of test repeater arguments (using the 'tester' keyword) while still enabling all sweep mission parameters
@@ -10,7 +10,7 @@ import argparse
 import rospy
 import sys
 
-from argparse_sweep_mission import sm_argparse, str2bool
+from torf_core.argparse_sweep_mission import sm_argparse, str2bool
 
 VALID_WORLD_LIST = ['flat', 'bumpy', 'Furkastrasse', 'Furkastrasse_textured', 'forest_plane', 'forest_plane_fine', 'Seville']
 
@@ -31,7 +31,7 @@ def parse_worlds(worlds_arg_in, plus_symbol='+'):
     # second case, we have a list of worlds seperated by & symbols
     elif plus_symbol in worlds_arg_in:
         world_list = worlds_arg_in.split(plus_symbol)
-        print ('received these world arguments {}'.format(world_list))
+        print(('received these world arguments {}'.format(world_list)))
     # finally, a string has been input - convert this to a list
     elif type(worlds_arg_in) == str:
         world_list = [worlds_arg_in, ]
@@ -50,7 +50,7 @@ def parse_worlds(worlds_arg_in, plus_symbol='+'):
             warn(argparse.ArgumentTypeError('Unrecognised world argument {}'.format(world)))
 
     if len(worlds_out) == 0:
-        raise ('no worlds found from input {}'.format(worlds_arg_in))
+        raise ('no worlds found from input {}'.format(worlds_out))
 
     return worlds_out
 
@@ -163,7 +163,7 @@ def parse_all_subparsers(parser, args, verbose=True):
     arg_dict = {}
     while args:
         name = args[0]
-        print('parsing: ' + args[0])
+        print(('parsing: ' + args[0]))
         options, args = parser.parse_known_args(args)
         arg_dict[name] = options
         if not options.subparser_name:
@@ -171,7 +171,7 @@ def parse_all_subparsers(parser, args, verbose=True):
 
     if verbose:
         for idx, val in enumerate(arg_dict):
-            print (idx, val)
+            print((idx, val))
             # print (arg_dict['name_space'][idx])
             # print ('')
 
@@ -190,7 +190,7 @@ def parse_repeat_cwssim_model(args, required_parsers=('tester', 'sm'), **kwargs)
         if parser_str in args:
             continue
         else:
-            print ('appending required parser {} to args'.format(parser_str))
+            print(('appending required parser {} to args'.format(parser_str)))
             args.append(parser_str)
 
     parser, subparsers = get_repeater_parser(args, **kwargs)
@@ -204,5 +204,5 @@ if __name__ == '__main__':
     args = rospy.myargv(argv=sys.argv)[1:]
     arg_dict = parse_repeat_cwssim_model(args)
 
-    print (arg_dict['sm'])
-    print (arg_dict['tester'])
+    print((arg_dict['sm']))
+    print((arg_dict['tester']))

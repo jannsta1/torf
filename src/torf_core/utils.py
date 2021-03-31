@@ -82,7 +82,7 @@ def get_fwd_drone_ims(resize=False, im_w=235, im_h=150, resize_method=cv2.INTER_
         im_list.append(this_im)
 
     if len(im_list) == 0:
-        raise ('No images found in {}'.format(files_dir))
+        raise 'No images found in {}'
     ims = np.asarray(im_list)
 
     return ims

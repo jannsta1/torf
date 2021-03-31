@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-import argparse
-
-from src.torf_ros import TorfCwssimHomingMission
-from src.torf_ros import *
+from torf_core.torf_ros import *
 import rospy
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
-#!/usr/bin/env python2
-from autorun_base import *
+#!/usr/bin/env python3
+from .autorun_base import *
 
 args_dict = parse_repeat_cwssim_model(sys.argv[1:], required_parsers=('tester', 'sm'),
                                       lower_default=0.0, range_default=7.0, delta_default=1.0)
@@ -9,7 +9,7 @@ lower = args_dict['tester'].lower
 upper = lower + args_dict['tester'].range + 0.01   # small offset added so that the last value is included in np.arange
 delta = args_dict['tester'].delta
 heading_offsets_deg = np.arange(lower, upper, delta)
-print ('testing outbound height values: {} with inbound value always at {}'.format(heading_offsets_deg, args_dict['sm'].mission_hgt))
+print(('testing outbound height values: {} with inbound value always at {}'.format(heading_offsets_deg, args_dict['sm'].mission_hgt)))
 
 passed = []
 list_of_summaries = []
@@ -28,5 +28,5 @@ for heading_offset in heading_offsets_deg:
 # print mission status (gives an indication if any of the tests have failed due to gazebo crashing (but they may fail
 # for other reasons))
 for idx, heading_offset in enumerate(heading_offsets_deg):
-    print ('for heading {} the summary is: \n'.format(heading_offset))
-    print (list_of_summaries[idx])
+    print(('for heading {} the summary is: \n'.format(heading_offset)))
+    print((list_of_summaries[idx]))

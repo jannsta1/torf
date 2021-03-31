@@ -1,6 +1,4 @@
-import pytest
-from src.cwssim_container import Cwsim_container_from_ims, response_across_im_series
-from src.utils import get_fwd_drone_ims
+from torf_core.cwssim_container import response_across_im_series
 
 
 # @pytest.fixture

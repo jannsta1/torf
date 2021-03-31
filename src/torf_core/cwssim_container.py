@@ -1,4 +1,4 @@
-from __future__ import division
+
 
 # global imports
 from multiprocessing import RawArray, Pool
@@ -75,7 +75,7 @@ class Cwsim_container(object):
         self.pyramid_constructor = Steerable_complex_wavelet_pyramid(im_h=im_h, im_w=im_w, levels=levels, nbands=nbands)
 
         band_h, band_w = self.pyramid_constructor.lowest_level_dim
-        print('lowest level dims: {}x{}'.format(band_h, band_w))
+        print(('lowest level dims: {}x{}'.format(band_h, band_w)))
 
         self.band_list = [None] * self.nbands
 
@@ -214,7 +214,7 @@ class Cwsim_container(object):
         results = np.zeros(self.qty_images_stored)
         for idx in range(self.qty_images_stored):
             results[idx] = self.self_im_query(idx, query_idx)
-        print (time() -t1)
+        print((time() -t1))
 
         if plot_output:
             plt.plot(results, marker='D')
@@ -274,7 +274,7 @@ class Cwsim_container(object):
 
         # this_band_1, this_band_2
 
-        results = self.pool.map(partial(worker_func, coefficients[0], coefficients[1]), range(self.qty_images_stored))
+        results = self.pool.map(partial(worker_func, coefficients[0], coefficients[1]), list(range(self.qty_images_stored)))
 
         return results
 
@@ -284,7 +284,7 @@ class Cwsim_container(object):
         results = np.zeros(self.qty_images_stored)
         for idx in range(self.qty_images_stored):
             results[idx] = self.self_im_query(idx, query_idx)
-        print (time() -t1)
+        print((time() -t1))
 
         if plot_output:
             plt.plot(results, marker='D')
@@ -355,12 +355,12 @@ class Cwsim_container(object):
         # print (np.shape(this_band_1), type(this_band_1[0,0]))
         # print (np.shape(this_band_2))
         # print (self.coefficient_tensor[0, 0, :, :].shape)
-        self.results = self.pool.map(partial(worker_func, this_band_1, this_band_2), range(self.qty_images_stored))
+        self.results = self.pool.map(partial(worker_func, this_band_1, this_band_2), list(range(self.qty_images_stored)))
 
     def print_info(self):
 
         depth, height, width = self.band_1_bank.shape
-        print('Memory bank shape is {} {} {}'.format(depth, height, width))
+        print(('Memory bank shape is {} {} {}'.format(depth, height, width)))
 
     def tidy_up(self):
 

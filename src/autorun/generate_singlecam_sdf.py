@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import numpy as np
 import argparse
 import rospy
@@ -22,7 +22,7 @@ def generate_singlecam_sdf_function(pitch_angle_deg=0.0, ros_update_rate=10.0,
         raise ('need to set the PX4_SRC_DIR environmental variable for this script to work')
     else:
         save_dir = os.path.join(px4_dir, 'Tools/sitl_gazebo/models/typhoon_2cam/typhoon_2cam.sdf')
-        print ('saving output to: {}'.format(save_dir))
+        print(('saving output to: {}'.format(save_dir)))
 
     # main camera string
     main_camera_bit = """

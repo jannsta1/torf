@@ -1,6 +1,6 @@
-#!/usr/bin/env python2
-from autorun_base import *
-from generate_singlecam_sdf import generate_singlecam_sdf_function
+#!/usr/bin/env python3
+from .autorun_base import *
+from .generate_singlecam_sdf import generate_singlecam_sdf_function
 
 args_dict = parse_repeat_cwssim_model(sys.argv[1:], required_parsers=('tester', 'sm'))
 
@@ -9,7 +9,7 @@ lower = args_dict['tester'].lower
 upper = lower + args_dict['tester'].range + 0.01   # small offset added so that the last value is included in np.arange
 delta = args_dict['tester'].delta
 pitches = np.arange(lower, upper, delta)
-print ('testing outbound height values: {} with inbound value always at {}'.format(pitches, args_dict['sm'].mission_hgt))
+print(('testing outbound height values: {} with inbound value always at {}'.format(pitches, args_dict['sm'].mission_hgt)))
 
 args_dict['tester'].vehicle = 'typhoon_2cam'
 # args_dict['tester'].worlds = 'Seville.world'
@@ -29,5 +29,5 @@ for pitch in pitches:
 # print mission status (gives an indication if any of the tests have failed due to gazebo crashing (but they may fail
 # for other reasons))
 for idx, pitch in enumerate(pitches):
-    print ('for height {} the summary is: \n'.format(pitch))
-    print (list_of_summaries[idx])
+    print(('for height {} the summary is: \n'.format(pitch)))
+    print((list_of_summaries[idx]))
