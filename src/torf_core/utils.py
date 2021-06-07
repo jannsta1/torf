@@ -7,7 +7,7 @@ import cv2
 import os
 
 # local imports
-from definitions_cwssim import IM_SEQUENCES
+from torf_core.definitions_cwssim import IM_SEQUENCES
 
 def matlab_style_gauss2D(shape=(3,3),sigma=0.5):
     """

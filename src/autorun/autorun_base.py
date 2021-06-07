@@ -13,6 +13,7 @@ from arg_parser import *
 
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from torf_core.definitions_cwssim import ROSLAUNCH, ROSLOG
+from torf_core.utils import date_string
 
 """
 A script for automating several runs of the torf_ros node in a simulation environment using the roslaunch api
@@ -131,25 +132,30 @@ def do_autorun(test_args, cwssim_args, save_name=None, autosort=False, test_id=N
             if rosgraph.is_master_online():  # Checks the master uri and results boolean (True or False)
                 print ('ROS MASTER is already online no need to restart')
             else:
-                print ('ROS MASTER is offline, starting new roscore')
+                print('ROS MASTER is offline, starting new roscore')
                 parent.start()
-            print ('roscore started')
+            print('roscore started')
 
-            print ('Launching torf simulate ')
+            print('Launching torf simulate ')
             if save_name:
                 bag_prefix = save_name + '_' + world[0:-6] + '_r_' + str(jdx) + '.bag'  # todo - make world optional - perhaps create subfolder for each test run
             elif autosort:
-                if test_variable:
-                    bag_path = os.path.join(ROSLOG, test_id, world[0:-6], str(test_variable))
-                    if not os.path.exists(bag_path):
-                        try:
-                            os.makedirs(bag_path)
-                        except OSError:
-                            # if e.errno != errno.EEXIST:
-                            raise OSError()
-                    bag_prefix = os.path.join(bag_path, 'r_' + str(jdx))
-                else:
-                    bag_prefix = os.path.join(ROSLOG, test_id, world[0:-6], 'r_' + str(jdx))
+                # if test_variable:
+
+                if not test_id:
+                    test_id = date_string()
+                bag_path = os.path.join(ROSLOG, test_id, world[0:-6], str(test_variable))
+                if not os.path.exists(bag_path):
+                    try:
+                        os.makedirs(bag_path)
+                    except OSError:
+                        # if e.errno != errno.EEXIST:
+                        raise OSError()
+                bag_prefix = os.path.join(bag_path, 'r_' + str(jdx))
+                # else:
+                #     if not test_id:
+                #         test_id = ""
+                #     bag_prefix = os.path.join(ROSLOG, test_id, world[0:-6], 'r_' + str(jdx))
                     # raise IOError("the 'test_variable' parameter must be passed in autosorting mode")
             else:
                 bag_prefix = 'sweep_mission_' + world[0:-6] + '_r_' + str(jdx)
