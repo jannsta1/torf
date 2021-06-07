@@ -275,10 +275,12 @@ class TorfCwssimHomingMission(Pyx4_base):
                 # prevent gabble being printed to the terminal
                 break
 
+        self.cwssim_state = CWSSIM_STATE.FINISHED
         # do not do tidy up - if pyx4 also calls this it seems to cause problems
         # self.tidy_up()
         rospy.logwarn('setting mission complete parameter to true')
         rosparam.set_param('cwssim_test_complete', "true")
+        self.shut_node_down()
 
     def tidy_up(self):
         """
