@@ -171,6 +171,7 @@ def generate_sweep_mission(
             slowdown_factor=args_in.slowdown_factor,
             t_familiar=args_in.t_familiar,
             hdg_offset=args_in.hdg_in_offset,
+            slowdown_at_switchback=args_in.slowdown_at_switchback,
         )
     elif args_in.mission_type == 'passive':
         instructions[instruction_cnt] = Sweep_wave(

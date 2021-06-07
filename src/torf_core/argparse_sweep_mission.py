@@ -80,11 +80,13 @@ def sm_argparse(sys_argv_in, started_by_ros=True, return_args=True, subparsers=N
                         familiar ground is detected')
     parser.add_argument('-r', '--termination_slowdown', type=str2bool, default=True,
                         help='do we slow down as we get close to the end of the run')
-    parser.add_argument('-e', '--close_to_end_thresh_high', type=int, default=25,
+    parser.add_argument('-f', '--slowdown_at_switchback', type=str2bool, default=False,
+                        help='do we slow down at the beginning and end of each transverse switchback')
+    parser.add_argument('-e', '--close_to_end_thresh_high', type=int, default=40,
                         help='the index where we consider to be getting close to the nest')
     parser.add_argument('-g', '--close_to_end_thresh_low', type=int, default=8,
                         help='the index where we consider to be at or near the nest')
-    parser.add_argument('-k', '--slowdown_factor', type=float, default=0.7, help='A factor for increasing the slowdown \
+    parser.add_argument('-k', '--slowdown_factor', type=float, default=0.5, help='A factor for increasing the slowdown \
                         rate should be in range [0 1] - with a lower number being a greater slowdown')
     parser.add_argument('-l', '--t_turnaround', type=float, default=10, help="How long we wait at the turn around point\
                         for - increase if the camera feed is still blurry at this point")

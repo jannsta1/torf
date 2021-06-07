@@ -1,4 +1,5 @@
 from copy import copy
+import numpy as np
 import rospy
 
 from pyx4_base.mission_states import *
@@ -61,10 +62,10 @@ class Sweep_wave(Generic_mission_state):
     def set_heading(self, custom_angle_of_attack=None):
 
         if custom_angle_of_attack:
-            print('custom')
+            # print('custom')
             self.this_hdg_tgt = self.heading_tgt_rad + (self.sweep_direction * np.deg2rad(custom_angle_of_attack))
         else:
-            print('not custon')
+            # print('not custom')
             self.this_hdg_tgt = self.heading_tgt_rad + (self.sweep_direction * np.deg2rad(self.angle_of_attack_degs))
 
         self.sweep_direction *= -1
@@ -138,14 +139,15 @@ class Sweep_wave_familiarity(Sweep_wave):
                  hdg_offset=0.0,
                  parent=None,
                  slow_down_at_end=True,
+                 slowdown_at_switchback=False,
                  angle_of_attack_degs=70,
                  search_angle_of_attack_degs=70,
                  amplitude=10,
                  cwssim_thresh=0.82,
-                 t_familiar=1.0,              # minimum time after peak familiarity before switchback
+                 t_familiar=1.0,  # minimum time after peak familiarity before switchback
                  close_to_end_thresh_high=40,
                  close_to_end_thresh_low=10,
-                 lat_slow_down_threshold_pc=0.9,  # the threshold of percentage of lateral motion (expressed in time) before lateral slowdown is initialised
+                 lat_slow_down_threshold_pc=0.75,  # the threshold of percentage of lateral motion (expressed in time) before lateral slowdown is initialised
                  slowdown_factor=0.5,
                  **kwargs
                  ):
@@ -170,6 +172,7 @@ class Sweep_wave_familiarity(Sweep_wave):
         # parse variables
         self.cwssim_thresh = cwssim_thresh
         self.slow_down_at_end = slow_down_at_end                        # logic flag
+        self.slow_down_at_switchback = slowdown_at_switchback
         self.close_to_end_thresh_high = close_to_end_thresh_high        # logic flag
         self.close_to_end_thresh_low = close_to_end_thresh_low          # logic flag
         self._tgt_event_duration = amplitude
@@ -193,6 +196,9 @@ class Sweep_wave_familiarity(Sweep_wave):
         self.cwssim_exceeded_this_sweep = False
         self.sweep_counter = 0                           # counts how many sweeps have been completed
         self.new_sample_if_cwssim_exceeded = False
+
+        self._ros_time_of_last_evt = rospy.get_time()
+        self._lateral_slowdown_factor = 1.0              # initially there should be no lateral slowdown
 
         self.slowdown_factor = slowdown_factor
 
@@ -248,7 +254,6 @@ class Sweep_wave_familiarity(Sweep_wave):
         self._tgt_event_duration = duration
         self.new_heading_timer = rospy.Timer(rospy.Duration(duration), self.new_heading_callback, oneshot=True)
 
-
     def begin_new_sidesweep(self, evt_type='unspecified'):
 
         rospy.loginfo('new heading sample due to {} - best torf score was {} with {} idx occurd {}s ago'
@@ -257,9 +262,17 @@ class Sweep_wave_familiarity(Sweep_wave):
         rospy.loginfo('t familiar {}'.format(self.t_familiar))
         rospy.loginfo('cwssim_exceeded_this_sweep {}'.format(self.cwssim_exceeded_this_sweep))
 
+        if self.this_best_cwssim_idx < self.close_to_end_thresh_low:
+            rospy.loginfo('On final sidesweep since last best idx was {}'.format(self.last_best_cwssim_idx))
+            self.on_last_sweep = True
+        else:
+            rospy.loginfo('Not on final sidesweep since last best idx was {}'.format(self.last_best_cwssim_idx))
         self.new_heading_timer.shutdown()
         # self.new_truncated_heading_timer.shutdown()
-        self.set_new_heading_timer(self.amplitude)
+        if self.on_last_sweep:
+            self.set_new_heading_timer(self.amplitude/2.0)
+        else:
+            self.set_new_heading_timer(self.amplitude)
 
         if self.cwssim_exceeded_this_sweep:
             self.set_heading()
@@ -281,8 +294,11 @@ class Sweep_wave_familiarity(Sweep_wave):
         self.new_sample_if_cwssim_exceeded = False
         self.cwssim_exceeded_this_sweep = False
 
-        if self.last_best_cwssim_idx < self.close_to_end_thresh_low:
-            self.on_last_sweep = True
+        # if self.last_best_cwssim_idx < self.close_to_end_thresh_low:
+        #     rospy.loginfo('On final sidesweep since last best idx was {}'.format(self.last_best_cwssim_idx ))
+        #     self.on_last_sweep = True
+        # else:
+        #     rospy.loginfo('Not on final sidesweep since last best idx was {}'.format(self.last_best_cwssim_idx))
 
     def quit_state_final_sweep_completed(self, message=""):
 
@@ -290,10 +306,24 @@ class Sweep_wave_familiarity(Sweep_wave):
         self.x_tgt = 0.0
         self.y_tgt = 0.0
         self.stay_alive = False
+        # self._parent_ref.node_alive = False
         rospy.loginfo('!!!!!!!!!!!!!!!!!!!!!!!!!!! Sweep_wave_familiarity - Mission success !!!!!!!!!!!!!!!!!!!!!!!!')
         rospy.loginfo('Visual navigation - at home - {}'.format(message))
         rospy.loginfo('Setting XY velocity to 0')
         rospy.loginfo('!!!!!!!!!!!!!!!!!!!!!!!!!!! Mission success !!!!!!!!!!!!!!!!!!!!!!!!')
+
+    def sidesweep_percentage_complete(self):
+        """
+        calculates what percentage of the current sidesweep mission has occurred
+        :return:
+        """
+        time_in_sweep = rospy.get_time() - self._ros_time_of_last_evt
+        if time_in_sweep < 1.0:
+            return time_in_sweep / self.amplitude
+        elif self.cwssim_exceeded_this_sweep:
+            return np.clip(self.ros_time_since_best_score / self.t_familiar, 0.5, 1.0)
+        else:
+            return (time_in_sweep) / self.amplitude
 
     def step(self):
         """
@@ -320,6 +350,28 @@ class Sweep_wave_familiarity(Sweep_wave):
             if self.cwssim_exceeded_this_sweep:
                 self.quit_state_final_sweep_completed(
                     message="found a high torf {} idx {}".format(self.this_best_cwssim, self.this_best_cwssim_idx))
+
+        ## lateral slowdown calculations
+        # calculate percentage of this wave's completion
+        if self.slow_down_at_switchback:
+            pc = self.sidesweep_percentage_complete()
+            # todo - this is typically only working for the start of the sweep anyway
+            #  (since we are usually in a truncated sweep state) either get rid of the end of sweep slowdown or fix
+            #  a cot function would make a nice profile for the change in speed at switchbacks
+
+            if pc < (1 - self._lat_slow_down_threshold_pc):
+                self._lateral_slowdown_factor = pc / (1 - self._lat_slow_down_threshold_pc)
+                # print('starting {}'.format(self._lateral_slowdown_factor))
+
+            elif pc > self._lat_slow_down_threshold_pc:
+                # self._lateral_slowdown_factor = (1 - pc) / (1 - self._lat_slow_down_threshold_pc)
+                self._lateral_slowdown_factor = 1 - (
+                            (pc - self._lat_slow_down_threshold_pc) / (1 - self._lat_slow_down_threshold_pc))
+                # print('ending {}  pc {} upper {} lower '.format(self._lateral_slowdown_factor, pc, (pc - self._lat_slow_down_threshold_pc), (1 - self._lat_slow_down_threshold_pc)))
+            else:
+                self._lateral_slowdown_factor = 1.0
+        else:
+            self._lateral_slowdown_factor = 1.0
 
         ## longitudinal slow down calculations
         # if our index is below a threshold (close_to_end_thresh_high) ramp the longitudinal speed down. If we are on
@@ -356,7 +408,7 @@ class Sweep_wave_familiarity(Sweep_wave):
         # publish new setpoint
         # varying setpoint data:
         self.x_vel = self.x_tgt * self._longitudinal_slowdown_factor
-        self.y_vel = self.y_tgt
+        self.y_vel = self.y_tgt * self._lateral_slowdown_factor
         # static setpoint data:
         self.z = self.mission_z_tgt
         self.yaw = self.heading_tgt_rad + self.hdg_offset

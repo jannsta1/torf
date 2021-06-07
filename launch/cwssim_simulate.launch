@@ -62,6 +62,7 @@
     <arg name="resize_w" default="None"/>
     <arg name="close_to_end_thresh_high" default="25"/>
     <arg name="close_to_end_thresh_low" default="8"/>
+    <arg name="slowdown_at_switchback" default="True"/>
 
     <node pkg="torf" type="torf_ros.py" name="cwssim_node" output="screen" required="true"
             args="
@@ -97,6 +98,7 @@
                 --levels $(arg levels)
                 --close_to_end_thresh_high $(arg close_to_end_thresh_high)
                 --close_to_end_thresh_low $(arg close_to_end_thresh_low)
+                --slowdown_at_switchback $(arg slowdown_at_switchback)
               "
         />
 
